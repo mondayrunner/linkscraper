@@ -35,8 +35,13 @@
             </div>
 
             <!-- Success Message -->
-            <div v-if="successMessage" class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p class="text-green-600">{{ successMessage }}</p>
+            <div v-if="successMessage" class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg transition-opacity duration-300">
+                <p class="text-green-600 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ successMessage }}
+                </p>
             </div>
 
             <!-- Error Message -->
@@ -95,10 +100,26 @@
                     links: [],
                     loading: false,
                     error: null,
-                    successMessage: null
+                    successMessage: null,
+                    successTimeout: null
                 }
             },
             methods: {
+                showSuccess(message, duration = 2000) {
+                    // Clear any existing timeout
+                    if (this.successTimeout) {
+                        clearTimeout(this.successTimeout);
+                    }
+                    
+                    // Show the message
+                    this.successMessage = message;
+                    this.error = null;
+                    
+                    // Set timeout to clear the message
+                    this.successTimeout = setTimeout(() => {
+                        this.successMessage = null;
+                    }, duration);
+                },
                 async scrapeUrl() {
                     if (!this.url) {
                         this.error = 'Please enter a URL';
@@ -144,34 +165,28 @@
                 async copyAllUrls() {
                     if (!this.links || this.links.length === 0) {
                         this.error = 'No URLs to copy';
-                        this.successMessage = null;
                         return;
                     }
                     
                     try {
                         const text = this.links.join('\n');
                         await navigator.clipboard.writeText(text);
-                        this.successMessage = 'All URLs copied to clipboard!';
-                        this.error = null;
+                        this.showSuccess('All URLs copied to clipboard!');
                     } catch (err) {
                         this.error = 'Failed to copy to clipboard';
-                        this.successMessage = null;
                     }
                 },
                 async copyLink(text) {
                     if (!text) {
                         this.error = 'Invalid URL';
-                        this.successMessage = null;
                         return;
                     }
                     
                     try {
                         await navigator.clipboard.writeText(text);
-                        this.successMessage = 'URL copied!';
-                        this.error = null;
+                        this.showSuccess('URL copied!');
                     } catch (err) {
                         this.error = 'Failed to copy to clipboard';
-                        this.successMessage = null;
                     }
                 }
             }
