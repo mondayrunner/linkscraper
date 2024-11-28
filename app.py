@@ -17,23 +17,22 @@ def scrape():
         url = request.json.get('url', '')
         if not url:
             logger.error("No URL provided")
-            return jsonify({'error': 'URL is required', 'links': []}), 400
+            return jsonify({'error': 'URL is required', 'links': [], 'content': ''}), 400
         
         logger.info(f"Received scrape request for URL: {url}")
-        links = extract_links(url)
-        logger.info(f"Extracted {len(links)} links: {links}")
+        links, content = extract_links(url)
+        logger.info(f"Extracted {len(links)} links")
         
         if not links:
             logger.warning("No links found")
-            return jsonify({'error': 'No links found', 'links': []}), 404
+            return jsonify({'error': 'No links found', 'links': [], 'content': ''}), 404
             
-        response_data = {'links': links}
-        logger.info(f"Sending response: {response_data}")
+        response_data = {'links': links, 'content': content}
         return jsonify(response_data)
         
     except Exception as e:
         logger.error(f"Error during scraping: {str(e)}")
-        return jsonify({'error': str(e), 'links': []}), 500
+        return jsonify({'error': str(e), 'links': [], 'content': ''}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
